@@ -37,8 +37,28 @@ fi
 
 # set a fancy prompt (non-color, unless we know we "want" color)
 case "$TERM" in
-    (xterm-color|*-256color|xterm-kitty) color_prompt=yes;;
+    xterm-color|*-256color|xterm-kitty) color_prompt=yes;;
 esac
+
+if [ "$TERM" = "linux" ]; then
+    echo -en "\e]P01a1b26" #black
+    echo -en "\e]P8404040" #darkgrey
+    echo -en "\e]P1d81111" #darkred
+    echo -en "\e]P9fc0a0a" #red
+    echo -en "\e]P200cd00" #darkgreen
+    echo -en "\e]PA00ff00" #green
+    echo -en "\e]P3cdcd00" #brown
+    echo -en "\e]PBffff00" #yellow
+    echo -en "\e]P41093f5" #darkblue
+    echo -en "\e]PC11b5f6" #blue
+    echo -en "\e]P5cd00cd" #darkmagenta
+    echo -en "\e]PDff00ff" #magenta
+    echo -en "\e]P600cdcd" #darkcyan
+    echo -en "\e]PE00ffff" #cyan
+    echo -en "\e]P7bec6df" #lightgrey
+    echo -en "\e]PFc8d3f5" #white
+    clear #for background artifacting
+fi
 
 # uncomment for a colored prompt, if the terminal has the capability; turned
 # off by default to not distract the user: the focus in a terminal window
@@ -57,19 +77,16 @@ if [ -n "$force_color_prompt" ]; then
 fi
 
 if [ "$color_prompt" = yes ]; then
-    PS1='${debian_chroot:+($debian_chroot)}\[\e[01;30;48;2;122;162;247m\] \u@\h \[\e[0m\]\[\e[01;34;48;2;46;46;66m\] \w \[\e[0m\] '
+	PS1='${debian_chroot:+($debian_chroot)}\[\e[01;30;48;2;122;162;247m\] \u@\h \[\e[0m\]\[\e[01;34;48;2;46;46;66m\] \w \[\e[0m\] '
 else
-    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+	PS1='${debian_chroot:+($debian_chroot)}\[\e[01;30;48;2;122;162;247m\] \u@\h \[\e[0m\]\[\e[01;34;48;2;46;46;66m\] \w \[\e[0m\] '
 fi
 unset color_prompt force_color_prompt
 
 # If this is an xterm set the title to user@host:dir
 case "$TERM" in
-xterm*|rxvt*)
+xterm*|rxvt*|*-16color)
     PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
-    ;;
-*)
-    ;;
 esac
 
 # enable color support of ls and also add handy aliases
@@ -92,7 +109,6 @@ fi
 #alias la='ls -A'
 #alias l='ls -CF'
 
-
 # Alias definitions.
 # You may want to put all your additions into a separate file like
 # ~/.bash_aliases, instead of adding them here directly.
@@ -113,23 +129,18 @@ if ! shopt -oq posix; then
   fi
 fi
 
-# Created by `pipx` on 2024-06-27 12:14:48
-export PATH="$PATH:/home/robert/.local/bin"
+# xinit script
+if [[ "$(tty)" = "/dev/tty1" ]]; then
+	pgrep awesome || startx "$HOME/.config/X11/xinitrc"
+fi
 
-#rm precaution
-alias rm='echo "This is not the command you are looking for."; false'
-alias 3n='nnn -e'
-alias trm='trash-put'
-alias tls='trash-list'
-
-#fuzzy finder
 export FZF_DEFAULT_OPTS="--height=50% --info=inline --border --color=border:#3B4261,bg+:#292E42"
 export FZF_DEFAULT_COMMAND="fdfind -H -t f . $HOME"
-bind -x '"\C-f":nvim "$(fzf)"'
+bind -x '"\C-f":nvim $(fzf)'
 
-bind -x '"\C-x\C-s":cd "$(fdfind -H -t d . $HOME | fzf)"'
+bind -x '"\C-x\C-s":cd $(fdfind -H -t d . $HOME | fzf)'
 bind '"\C-g":"\C-x\C-s\n"'
-bind -x '"\C-n":cd "$(fdfind -H -I -t d . $HOME | fzf)"'
+bind -x '"\C-n":cd $(fdfind -H -I -t d . $HOME | fzf)'
 
 export MANPAGER='nvim +Man!'
 
@@ -142,11 +153,18 @@ up ()
     OLDPWD="$old"
 }
 
-export PATH="$HOME/.config/nvm/versions/node/v22.9.0/bin:$PATH"
+# nvm
+export PATH=$HOME/.nvm/versions/node/v22.9.0/bin:$PATH # if not found, falls back to default behaviour
+export NVM_DIR="$HOME/.nvm"
 
-export NVM_DIR="$HOME/.config/nvm"
 [[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh" --no-use
+
 # [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 # [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
+export PATH=$HOME/.local/bin:$PATH
+alias rm='echo "This is not the command you are looking for."; false'
+alias trm='trash-put'
+
+# notetaking
 export OBSIDIAN_REST_API_KEY=4617b830b25e65899e938524431bde0cf9293faf80894711aee79c696ec84115
